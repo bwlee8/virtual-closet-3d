@@ -6,7 +6,8 @@ import { CATEGORIES, CATEGORY_ORDER } from '../lib/layers'
 const empty = { img: null, canvas: null, url: null }
 
 export default function AddGarment({ onAdd, onClose }) {
-  const [name, setName] = useState('')
+  const [brand, setBrand] = useState('')
+  const [style, setStyle] = useState('')
   const [category, setCategory] = useState('tshirt')
   const [color, setColor] = useState('')
   const [tolerance, setTolerance] = useState(42)
@@ -60,7 +61,7 @@ export default function AddGarment({ onAdd, onClose }) {
     try {
       const frontBlob = await canvasToBlob(front.canvas)
       const backBlob = back.canvas ? await canvasToBlob(back.canvas) : null
-      await onAdd({ name, category, color, frontBlob, backBlob })
+      await onAdd({ brand, style, category, color, frontBlob, backBlob })
       onClose()
     } catch (e) {
       setError('Saving failed. Your browser may be out of storage.')
@@ -102,11 +103,16 @@ export default function AddGarment({ onAdd, onClose }) {
             </label>
           )}
 
-          <label className="field">
-            <span>Name</span>
-            <input ref={firstField} type="text" value={name} onChange={(e) => setName(e.target.value)}
-              placeholder="Oxford button-down" />
-          </label>
+          <div className="field-row">
+            <label className="field">
+              <span>Brand</span>
+              <input ref={firstField} type="text" value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Uniqlo" />
+            </label>
+            <label className="field">
+              <span>Style</span>
+              <input type="text" value={style} onChange={(e) => setStyle(e.target.value)} placeholder="Oxford button-down" />
+            </label>
+          </div>
 
           <div className="field-row">
             <label className="field">

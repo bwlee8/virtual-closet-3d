@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { CATEGORIES, CATEGORY_ORDER, slotOf } from '../lib/layers'
+import { CATEGORIES, CATEGORY_ORDER, garmentLabel, slotOf } from '../lib/layers'
 
 const SORTS = [
   { key: 'recent', label: 'Newest' },
@@ -82,7 +82,7 @@ const ClosetPanel = React.memo(function ClosetPanel({
                     {!g.backUrl && <i className="no-back" title="No back photo">F</i>}
                   </span>
                   <span className="rack-meta">
-                    <b>{g.name}</b>
+                    <b>{garmentLabel(g)}</b>
                     <small>{CATEGORIES[g.category]?.label}{g.color ? ` · ${g.color}` : ''}</small>
                   </span>
                   <span className="wear" title={`Worn ${g.wearCount || 0} times`}>

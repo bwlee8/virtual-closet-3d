@@ -1,13 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useCloset } from './state/useCloset'
 import { useRotation } from './state/useRotation'
-import Stage3D from './components/Stage3D'
-import RotationDial from './components/RotationDial'
+import Stage2D from './components/Stage2D'
+// 3D is parked, not removed — Stage3D.jsx still works. Swap this import (and
+// the <Stage2D> below) back to Stage3D when it's time to return to 3D, and
+// bring back RotationDial plus the drag-to-orbit / Spin 360° controls with it.
+// The flat stage only has a front and a back, so it gets a two-way toggle.
+// import Stage3D from './components/Stage3D'
+// import RotationDial from './components/RotationDial'
 import ClosetPanel from './components/ClosetPanel'
 import AddGarment from './components/AddGarment'
 import Inspector from './components/Inspector'
 import Measurements from './components/Measurements'
 import Outfits from './components/Outfits'
+
+const FACES = [
+  { deg: 0, label: 'Front' },
+  { deg: 180, label: 'Back' },
+]
 
 const TABS = [
   { key: 'outfit', label: 'Outfit' },
@@ -17,35 +27,12 @@ const TABS = [
 
 export default function App() {
   const closet = useCloset()
-  const rotation = useRotation(18)
+  const rotation = useRotation(0)
+  const [face, setFace] = useState(0)
   const [tab, setTab] = useState('outfit')
   const [adding, setAdding] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
   const [showGuides, setShowGuides] = useState(false)
-  const [spinning, setSpinning] = useState(false)
-  const drag = useRef({ on: false, x: 0 })
-
-  useEffect(() => {
-    if (!spinning) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      rotation.set(rotation.value.current > 90 && rotation.value.current < 270 ? 0 : 180)
-      setSpinning(false)
-      return
-    }
-    let start = null
-    let raf = 0
-    const from = rotation.value.current
-    const step = (t) => {
-      if (start === null) start = t
-      const p = Math.min(1, (t - start) / 3000)
-      const eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2
-      rotation.set(from + eased * 360)
-      if (p < 1) raf = requestAnimationFrame(step)
-      else setSpinning(false)
-    }
-    raf = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(raf)
-  }, [spinning, rotation])
 
   // Stable identities — without these, memo() on ClosetPanel never skips,
   // because a fresh arrow function counts as a changed prop every render.
@@ -58,28 +45,12 @@ export default function App() {
     setSelectedId(null)
   }, [deleteGarment])
 
-  const dragHandlers = {
-    onPointerDown: (e) => {
-      drag.current = { on: true, x: e.clientX }
-      e.currentTarget.setPointerCapture(e.pointerId)
-    },
-    onPointerMove: (e) => {
-      if (!drag.current.on) return
-      const dx = e.clientX - drag.current.x
-      drag.current.x = e.clientX
-      rotation.set((a) => a + dx * 0.55)
-    },
-    onPointerUp: () => { drag.current.on = false },
-    onPointerCancel: () => { drag.current.on = false },
-  }
-
   const selected = closet.garments.find((g) => g.id === selectedId) || null
 
   return (
     <div className="app">
       <header className="topbar">
         <h1>Virtual Closet<span>/ {closet.garments.length} pieces</span></h1>
-        <button className="btn small" onClick={() => setSpinning(true)} disabled={spinning}>Spin 360°</button>
       </header>
 
       <main className="layout">
@@ -95,14 +66,13 @@ export default function App() {
 
         <section className="stage">
           <div className="stage-frame">
-            <Stage3D
+            <Stage2D
               measurements={closet.measurements}
               garments={closet.equippedGarments}
               rotation={rotation}
               showGuides={showGuides}
-              dragHandlers={dragHandlers}
             />
-            <div className="badge">WebGL · {closet.equippedGarments.length} layers</div>
+            <div className="badge">2D · {closet.equippedGarments.length} layers</div>
             {showGuides && (
               <div className="legend">
                 <span>CHEST {closet.measurements.chestCm}</span>
@@ -111,8 +81,15 @@ export default function App() {
               </div>
             )}
           </div>
-          <RotationDial rotation={rotation} />
-          <p className="stage-hint dim">Drag the figure or the gauge to orbit. Arrow keys step, shift for bigger steps.</p>
+          <div className="dial-snaps" role="group" aria-label="View">
+            {FACES.map((f) => (
+              <button key={f.deg} type="button" aria-pressed={face === f.deg}
+                className={face === f.deg ? 'snap active' : 'snap'}
+                onClick={() => { setFace(f.deg); rotation.set(f.deg) }}>
+                {f.label}
+              </button>
+            ))}
+          </div>
         </section>
 
         <div className="rail">

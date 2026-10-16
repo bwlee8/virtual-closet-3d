@@ -27,4 +27,7 @@ export const CATEGORY_ORDER = ['tshirt', 'shirt', 'jacket', 'pants', 'shorts', '
 
 export const slotOf = (category) => CATEGORIES[category]?.slot ?? 'baseTop'
 
+/** A garment is labelled by brand + style, e.g. "Uniqlo Oxford button-down". */
+export const garmentLabel = (g) => [g.brand, g.style].filter(Boolean).join(' ') || 'Untitled'
+
 export const DEFAULT_FIT = { scale: 1, drop: 0, length: 1 }

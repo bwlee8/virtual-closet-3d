@@ -1,3 +1,10 @@
 node_modules
 dist
 .DS_Store
+
+# fal API key and other secrets — never commit
+.env.local
+.env*.local
+
+# raw photos used to make the avatar
+avatar-source/
