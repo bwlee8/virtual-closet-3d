@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SLOTS, SLOT_ORDER } from '../lib/layers'
+import { SLOTS, SLOT_ORDER, garmentLabel } from '../lib/layers'
 
 export default function Outfits({
   equipped, garments, outfits, onSave, onLoad, onDelete, onClear, onLogWear,
@@ -23,7 +23,7 @@ export default function Outfits({
             return (
               <li key={s} className={g ? 'slot filled' : 'slot'}>
                 <span className="slot-label">{SLOTS[s].label}</span>
-                <span className="slot-value">{g ? g.name : '—'}</span>
+                <span className="slot-value">{g ? garmentLabel(g) : '—'}</span>
               </li>
             )
           })}

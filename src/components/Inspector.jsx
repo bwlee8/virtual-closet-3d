@@ -20,10 +20,18 @@ export default function Inspector({ garment, onUpdate, onDelete }) {
         <button className="btn small" onClick={() => setFit(DEFAULT_FIT)}>Reset</button>
       </div>
       <div className="pad stack">
-        <label className="field">
-          <span>Name</span>
-          <input type="text" value={garment.name} onChange={(e) => onUpdate(garment.id, { name: e.target.value })} />
-        </label>
+        <div className="field-row">
+          <label className="field">
+            <span>Brand</span>
+            <input type="text" value={garment.brand || ''} placeholder="Uniqlo"
+              onChange={(e) => onUpdate(garment.id, { brand: e.target.value })} />
+          </label>
+          <label className="field">
+            <span>Style</span>
+            <input type="text" value={garment.style || ''} placeholder="Oxford button-down"
+              onChange={(e) => onUpdate(garment.id, { style: e.target.value })} />
+          </label>
+        </div>
 
         <label className="field">
           <span>Category</span>

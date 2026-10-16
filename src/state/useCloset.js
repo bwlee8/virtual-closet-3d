@@ -8,7 +8,11 @@ import { loadImage } from '../lib/cutout'
 const SETTINGS_ID = 'measurements'
 
 /** Stored record -> record plus loaded images the renderer can draw from. */
-async function hydrate(record) {
+async function hydrate(stored) {
+  // Garments saved before brand/style existed only have a name: carry it over
+  // as the style so the label survives. It is written back on the next edit.
+  const { name, ...record } = stored
+  if (name && !record.style && !record.brand) record.style = name
   const frontUrl = record.frontBlob ? URL.createObjectURL(record.frontBlob) : null
   const backUrl = record.backBlob ? URL.createObjectURL(record.backBlob) : null
   const [frontImg, backImg] = await Promise.all([
@@ -83,10 +87,11 @@ export function useCloset() {
     return fresh
   }, [track])
 
-  const addGarment = useCallback(({ name, category, color, frontBlob, backBlob }) =>
+  const addGarment = useCallback(({ brand, style, category, color, frontBlob, backBlob }) =>
     persist({
       id: newId(),
-      name: name?.trim() || 'Untitled',
+      brand: brand?.trim() || '',
+      style: style?.trim() || '',
       category,
       color: color || '',
       frontBlob,
@@ -178,11 +183,11 @@ export function useCloset() {
       ['Camp shorts', 'shorts', '#5E6B54', 'Sage', 6, null],
       ['Court sneakers', 'shoes', '#EDEAE2', 'White', 52, 'most'],
     ]
-    for (const [name, category, hex, color, wearCount, pin] of spec) {
+    for (const [style, category, hex, color, wearCount, pin] of spec) {
       const frontBlob = await canvasToBlob(panelCanvas(category, hex, 'front'))
       const backBlob = await canvasToBlob(panelCanvas(category, hex, 'back'))
       await persist({
-        id: newId(), name, category, color, frontBlob, backBlob,
+        id: newId(), brand: '', style, category, color, frontBlob, backBlob,
         fit: { ...DEFAULT_FIT }, wearCount, lastWorn: Date.now() - wearCount * 36e5 * 40,
         pin, createdAt: Date.now(),
       })
